@@ -28,9 +28,9 @@ flowchart LR
 A GMM assumes that a dataset is generated from a combination of several gaussian (normal) distributions, each representing a latent group or cluster.
 
 Each component is defined by three elements:
-- a **mixture weight**, the proportion of data belonging to the cluster;
-- a **mean vector**, the cluster center; and
-- a **covariance matrix**, the cluster shape and dispersion.
+- a **mixture weight** (the proportion of data belonging to the cluster);
+- a **mean vector** (the cluster center); and
+- a **covariance matrix** (the cluster shape and dispersion).
 
 During model fitting, the EM algorithm iteratively estimates these parameters by alternating between assigning probabilities of cluster membership to each data point (E step) and updating the model parameters to maximize the likelihood of the data (M step).
 
