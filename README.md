@@ -39,11 +39,11 @@ Datasets containing clusters with gaussian distribution structures can be very u
 
 ```mermaid
 flowchart LR
-    G[Synthetic dataset] --> H1[Algorithm A<br/>(decision-making)]
-    G --> H2[Algorithm B<br/>(decision-making)]
-    G --> H3[Algorithm C<br/>(decision-making)]
+    G[Synthetic dataset] --> H1[Algorithm A\n(decision-making)]
+    G --> H2[Algorithm B\n(decision-making)]
+    G --> H3[Algorithm C\n(decision-making)]
 
-    H1 --> I[Performance assessment<br/>(clustering & representativeness metrics)]
+    H1 --> I[Performance assessment\n(clustering & representativeness metrics)]
     H2 --> I
     H3 --> I
 ```
