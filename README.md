@@ -38,7 +38,7 @@ During model fitting, the EM algorithm iteratively estimates these parameters by
 
 # The purpose of this repository
 
-Datasets containing clusters with gaussian distribution structures can be very useful for comparing the performance of different algorithms in identifying clusters and their typical or most representative samples, such as clustering quality metrics.
+Datasets containing clusters with gaussian distribution structures can be very useful for comparing the performance of different algorithms in identifying clusters and their typical or most representative samples, which can be done by clustering quality metrics.
 
 ```mermaid
 flowchart LR
