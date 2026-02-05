@@ -7,15 +7,18 @@ Gaussian Mixture Models (GMM) consist of a method of statistical analysis whose 
 ```mermaid
 flowchart LR
     A[Input data] --> B[GMM]
-    B -->|EM algorithm| C[Estimated parameters]
+    B -->|EM algorithm| C[Estimated GMM parameters]
+    C --> D[Mixture weights]
+    C --> E[Mean vectors]
+    C --> F[Covariance matrices]
 ```
 
 Beyond obtaining clusters from univariate or multivariate normal components through the Expectation–Maximization (EM) algorithm, GMM can also be employed for sampling synthetic data.
 
 ```mermaid
 flowchart LR
-    D[Known parameters] --> E[GMM]
-    E --> F[Synthetic dataset]
+    G[Known GMM parameters] --> H[GMM]
+    H --> |Sampling| I[Synthetic dataset]
 ```
 
 ---
@@ -39,13 +42,13 @@ Datasets containing clusters with gaussian distribution structures can be very u
 
 ```mermaid
 flowchart LR
-    G[Synthetic dataset] --> H1[Algorithm A]
-    G --> H2[Algorithm B]
-    G --> H3[Algorithm C]
+    J[Synthetic dataset] --> K1[Algorithm A]
+    J --> K2[Algorithm B]
+    J --> K3[Algorithm C]
 
-    H1 --> I[Performance assessment]
-    H2 --> I
-    H3 --> I
+    K1 --> |Clustering quality metrics| L[Estimated parameters]
+    K2 --> L
+    K3 --> L
 ```
 
 Given that, this repository aims to provide a framework for assessing data representativeness by applying and comparing clustering and decision-making algorithms under controlled and reproducible conditions.
