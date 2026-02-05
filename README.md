@@ -35,6 +35,17 @@ During model fitting, the EM algorithm iteratively estimates these parameters by
 
 # The purpose of this repository
 
-Datasets containing clusters with gaussian distribution structures can be very useful for comparing the performance of different algorithms in identifying clusters and their typical or most representative samples, given some clustering quality metrics.
+Datasets containing clusters with gaussian distribution structures can be very useful for comparing the performance of different algorithms in identifying clusters and their typical or most representative samples, such as clustering quality metrics.
+
+```mermaid
+flowchart LR
+    G[Synthetic dataset] --> H1[Algorithm A<br/>(decision-making)]
+    G --> H2[Algorithm B<br/>(decision-making)]
+    G --> H3[Algorithm C<br/>(decision-making)]
+
+    H1 --> I[Performance assessment<br/>(clustering & representativeness metrics)]
+    H2 --> I
+    H3 --> I
+```
 
 Given that, this repository aims to provide a framework for assessing data representativeness by applying and comparing clustering and decision-making algorithms under controlled and reproducible conditions.
