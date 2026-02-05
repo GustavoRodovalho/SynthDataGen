@@ -46,8 +46,8 @@ flowchart LR
     J --> K2[Algorithm B]
     J --> K3[Algorithm C]
 
-    K2 --> |Clustering quality metrics| L[Estimated parameters]
-    K1 --> L
+    K1 --> L[Estimated parameters]
+    K2 --> |Clustering quality metrics| L
     K3 --> L
 ```
 
