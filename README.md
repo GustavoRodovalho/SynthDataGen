@@ -55,4 +55,4 @@ flowchart LR
     K3 --> L
 ```
 
-Given that, this repository aims to provide the basis for frameworks for assessing data representativeness by applying and comparing clustering and decision-making algorithms under controlled and reproducible conditions.
+Given this context, this repository aims to provide a framework for analyzing data representativeness by applying and comparing clustering and decision-making algorithms under controlled and reproducible conditions.
