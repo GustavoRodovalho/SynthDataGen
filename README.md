@@ -46,7 +46,7 @@ flowchart LR
     J --> K2[Algorithm B]
     J --> K3[Algorithm C]
 
-    K1 --> L[Comparative performance assessment]
+    K1 --> L[Performance analysis]
     K2 --> L
     K3 --> L
 ```
