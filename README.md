@@ -42,7 +42,7 @@ During model fitting, the EM algorithm iteratively estimates these parameters by
 
 Datasets containing clusters with known gaussian distribution structures can be very useful for comparing the performance of different algorithms in identifying clusters and their typical or most representative samples, which can be done by clustering quality metrics.
 
-## Synthetic data usage
+## Example of synthetic data usage
 
 ```mermaid
 flowchart LR
