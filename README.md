@@ -15,6 +15,8 @@ flowchart LR
 
 Beyond obtaining clusters from univariate or multivariate normal components through the Expectation–Maximization (EM) algorithm, GMM can also be employed for sampling synthetic data.
 
+## GMM sampling: model → data
+
 ```mermaid
 flowchart LR
     G[Known GMM parameters] --> H[GMM]
@@ -38,7 +40,9 @@ During model fitting, the EM algorithm iteratively estimates these parameters by
 
 # The purpose of this repository
 
-Datasets containing clusters with gaussian distribution structures can be very useful for comparing the performance of different algorithms in identifying clusters and their typical or most representative samples, which can be done by clustering quality metrics.
+Datasets containing clusters with known gaussian distribution structures can be very useful for comparing the performance of different algorithms in identifying clusters and their typical or most representative samples, which can be done by clustering quality metrics.
+
+## Synthetic data usage
 
 ```mermaid
 flowchart LR
