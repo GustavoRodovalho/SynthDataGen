@@ -5,14 +5,12 @@ import tensorflow_probability as tfp
 import numpy as np
 
 # Load and visualize multidimensional data
-import pandas as pd
-import seaborn as sns
-from sklearn.manifold import TSNE
+from visualization import ScatterPlotVisualizer
 
 # Plotting
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import matplotlib.cm as cm
+import matplotlib as mpl
 
 # Synthetic Data Generator with Gaussian Mixture Models (GMM) using Tensorflow Probability
 
@@ -40,155 +38,82 @@ class SyntheticGMMGenerator:
         self.mus = None
         self.covs = None
 
-        # Samples
+        # Dataset
         self.samples_probs = None
         self.labels = None
-
-        # Dataset
         self.dataset = None
 
-    def plot_gmm(self, mus, covs, cluster_probs, ax=None, n_std=2):
-        """
-        Plot GMM parameters.
-        
-        Parameters
-        ----------
-        mus : array (K, 2)
-            Means of the Gaussians
-        covs : array (K, 2, 2)
-            Covariance matrices
-        cluster_probs : array (K,)
-            Mixture weights (used as alpha)
-        n_std : int
-            Number of standard deviations for ellipse radius
-        """
+    def set_params(self, cluster_probs, mus, covs):
+        """Set user-defined GMM parameters."""
 
-        if ax is None:
-            fig, ax = plt.subplots(nrows=self.n_dimensions, ncols=self.n_dimensions,figsize=(6, 6), sharex=True)
-
-        colors = cm.gist_rainbow(np.linspace(0, 1, self.n_components))
-
-        # Plot gaussian curves for each dimension
-        for dim_idx in range(self.n_dimensions):
-            for clust_idx in range(mus.shape[0]):
-                mu = mus[clust_idx, dim_idx]
-                sigma = np.sqrt(covs[clust_idx][dim_idx, dim_idx])
-                alpha = cluster_probs[clust_idx]
-                color = colors[clust_idx]
-
-                x = np.linspace(mu - 4*sigma, mu + 4*sigma, 100)
-                y = (1 / (sigma * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mu) / sigma) ** 2)
-
-                ax[dim_idx, dim_idx].plot(x, y, color=color, alpha=float(alpha))
-                ax[dim_idx, dim_idx].grid(True, which='both', axis='x', linestyle='--', alpha=0.5)
-                ax[dim_idx, dim_idx].set_yticks([])  # Hide y-axis ticks for clarity
-                # ax[dim_idx, dim_idx].set_ylim(0, None)  # Set y-axis limit to start at 0
-
-        # Plot ellipses for each pair of dimensions
-        for i in range(self.n_dimensions):
-            for j in range(i+1, self.n_dimensions):
-                for clust_idx in range(mus.shape[0]):
-                    mu = mus[clust_idx, [i, j]]
-                    cov = covs[clust_idx][np.ix_([i, j],[i, j])]
-                    alpha = cluster_probs[clust_idx]
-                    color = colors[clust_idx]
-
-                    # Eigen decomposition of covariance
-                    eigvals, eigvecs = np.linalg.eigh(cov)
-
-                    # Sort eigenvalues (largest first)
-                    order = eigvals.argsort()[::-1]
-                    eigvals, eigvecs = eigvals[order], eigvecs[:, order]
-
-                    # Compute ellipse angle
-                    angle = np.degrees(np.arctan2(eigvecs[1, 0], eigvecs[0, 0]))
-
-                    # Width and height (n_std confidence)
-                    width, height = 2 * n_std * np.sqrt(eigvals)
-
-                    ellipse = mpatches.Ellipse(
-                        xy=mu,
-                        width=width,
-                        height=height,
-                        angle=angle,
-                        facecolor=color,
-                        edgecolor=color,
-                        alpha=float(alpha),
-                        linewidth=2
-                    )
-
-                    ax[j, i].add_patch(ellipse)
-                    ax[j, i].scatter(mu[0], mu[1], color='k', s=50, marker='x')
-                    ax[j, i].grid(True)
-
-        return ax
-
-    def params_settings(self, plot_params=False):
-        """Print the parameters of the GMM."""
-
-        cluster_probs = self.cluster_probs.numpy() if self.cluster_probs is not None else None
-        mus = self.mus.numpy() if self.mus is not None else None
-        covs = self.covs.numpy() if self.covs is not None else None
-
-        print("Cluster weights (probs):", cluster_probs)
-        print("Means (mus):")
-        print("Covariances (covs):", covs)
-
-        self.ax = self.plot_gmm(mus=mus, covs=covs, cluster_probs=cluster_probs)
-
-        if plot_params:
-            plt.show()
-
-    def load_params(self, cluster_probs, mus, covs):
-        """Load GMM parameters from user input."""
         self.cluster_probs = tf.constant(cluster_probs, dtype=tf.float32)
         self.mus = tf.constant(mus, dtype=tf.float32)
         self.covs = tf.constant(covs, dtype=tf.float32)
 
-    def load_random_params(self, cov_type: str = "diagonal"):
-        """Generate random GMM parameters."""
-        # Cluster weights
-        self.cluster_probs = tf.constant(
+        self._validate_params()
+
+    def set_random_params(self, cov_type: str = "diagonal"):
+        """Generate and set random GMM parameters."""
+
+        cluster_probs = tf.constant(
             np.random.dirichlet(np.ones(self.n_components)),
             dtype=tf.float32
         )
 
-        # Means
-        self.mus = tf.constant(
+        mus = tf.constant(
             np.random.rand(self.n_components, self.n_dimensions) * 10 - 5,
             dtype=tf.float32
         )
 
-        if cov_type == "spherical":
-            # Spherical covariance matrices
-            covs = []
-            eps = 1e-6  # numerical stability
-            for _ in range(self.n_components):
-                # Single variance per cluster
-                sigma2 = np.random.rand() * 0.5 + 0.1   # scalar variance
+        covs = tf.constant(
+            self._generate_random_covariances(cov_type),
+            dtype=tf.float32
+        )
+
+        self.set_params(cluster_probs, mus, covs)
+
+    def _generate_random_covariances(self, cov_type: str = "diagonal"):
+        """Generate random covariance matrices based on the specified type."""
+
+        covs = []
+        eps = 1e-6
+
+        for _ in range(self.n_components):
+
+            if cov_type == "spherical":
+                sigma2 = np.random.rand() * 0.5 + 0.1
                 cov = (sigma2 + eps) * np.eye(self.n_dimensions)
-                covs.append(cov)
-            self.covs = tf.constant(np.array(covs), dtype=tf.float32)
 
-        elif cov_type == "diagonal":
-            # Diagonal covariance matrices
-            covs = []
-            for _ in range(self.n_components):
+            elif cov_type == "diagonal":
                 diag = np.random.rand(self.n_dimensions) * 0.5 + 0.1
-                covs.append(np.diag(diag))
-            self.covs = tf.constant(covs, dtype=tf.float32)
+                cov = np.diag(diag)
 
-        elif cov_type == "full":
-        # Full covariance matrices
-            covs = []
-            eps = 1e-3  # numerical stability
-            for _ in range(self.n_components):
+            elif cov_type == "full":
                 A = np.random.randn(self.n_dimensions, self.n_dimensions)
                 cov = A @ A.T + eps * np.eye(self.n_dimensions)
-                covs.append(cov)
-            self.covs = tf.constant(np.array(covs), dtype=tf.float32)
 
-    def generate_data(self, random_params: bool = True, cov_type: str = "diagonal", include_mus: bool = True):
+            else:
+                raise ValueError("cov_type must be 'spherical', 'diagonal', or 'full'")
+
+            covs.append(cov)
+
+        return np.array(covs)
+
+    def _validate_params(self):
+
+        if self.cluster_probs is None or self.mus is None or self.covs is None:
+            raise ValueError("GMM parameters are not set. Use set_params() or set_random_params(cov_type).")
+
+        if self.cluster_probs.shape[0] != self.n_components:
+            raise ValueError("cluster_probs shape mismatch.")
+
+        if self.mus.shape != (self.n_components, self.n_dimensions):
+            raise ValueError("mus shape mismatch.")
+
+        if self.covs.shape != (self.n_components, self.n_dimensions, self.n_dimensions):
+            raise ValueError("covs shape mismatch.")
+
+    def generate_data(self, include_mus: bool = True):
         """
         Generate a synthetic data sampled from a GMM.
         Args:
@@ -199,13 +124,8 @@ class SyntheticGMMGenerator:
             dataset (tf.Tensor): Generated synthetic dataset.
         """
 
-        # (1) Load parameters
-        if random_params:
-            self.load_random_params(cov_type=cov_type)
-        
-        else:
-            if self.cluster_probs is None or self.mus is None or self.covs is None:
-                raise ValueError("You must load parameters using load_params() before generating samples.")
+        # (1) Validate loaded parameters
+        self._validate_params()
 
         scale_tril = tf.linalg.cholesky(self.covs) # Cholesky decomposition -> Input for MultivariateNormalTriL
 
@@ -243,57 +163,6 @@ class SyntheticGMMGenerator:
 
         return self.dataset
 
-    def plot_tsne(
-        self,
-        samples_size: int = 20,
-        perplexity: int = 30,
-        random_state: int = 42,
-        figsize=(8, 6)
-    ):
-        """
-        Plot the dataset using t-SNE.
-        """
-
-        if self.dataset is None:
-            raise RuntimeError("You must call generate_data() before plotting.")
-
-        tsne = TSNE(
-            n_components=2,
-            perplexity=perplexity,
-            random_state=random_state
-        )
-
-        if self.dataset.shape[1] == 2:
-            data_2d = self.dataset
-            print(self.dataset)
-        else:
-            data_2d = tsne.fit_transform(self.dataset)
-
-        # cmap = cm.get_cmap(colormap, self.n_components)
-
-        plt.figure(figsize=figsize)
-
-        plt.scatter(
-            data_2d[:, 0],
-            data_2d[:, 1],
-            s=samples_size,
-            color='white',
-            edgecolors='k',
-            label="Samples",
-            alpha=0.8
-        )
-
-        plt.xlabel("t-SNE 1")
-        plt.ylabel("t-SNE 2")
-        plt.legend()
-        plt.title("Synthetic GMM dataset (t-SNE projection)")
-        plt.tight_layout()
-        plt.show()
-
-    def plot_dataset(self, samples_size):
-        self.ax = self.plot_gmm(mus=self.mus, covs=self.covs, cluster_probs=self.cluster_probs)
-        plt.show()
-
 # Example usage
 if __name__ == "__main__":
     generator = SyntheticGMMGenerator(
@@ -303,8 +172,22 @@ if __name__ == "__main__":
         seed=42
     )
 
-    # generator.load_params(cluster_probs, mus, covs) # must be set if random_params=False
-    data = generator.generate_data(random_params=True, cov_type="diagonal") # generate random parameters with diagonal covariance matrices
-    # generator.params_settings(plot_params=False)
-    generator.plot_dataset(samples_size=20)
-    generator.plot_tsne(samples_size=20, perplexity=30) # perplexity must be < n_samples
+    # Data generation
+    generator.set_random_params(cov_type="full") # must be randomly set or loaded by the user (set_params)
+    data = generator.generate_data(include_mus=True) # generate random parameters with diagonal covariance matrices
+    mus = generator.mus
+    covs = generator.covs
+    cluster_probs = generator.cluster_probs
+    print("Means:\n", mus.numpy())
+    print("Covs:\n", covs.numpy())
+    print("Cluster probs:\n", cluster_probs.numpy())
+
+    # Visualization
+    visualizer = ScatterPlotVisualizer(
+        data=data,
+        mus=mus,
+        covs=covs,
+        cluster_probs=cluster_probs
+    )
+    visualizer.plot_pca(samples_size=20, figsize=(8, 6))
+    visualizer.plot_splom(samples_size=20, figsize=(12, 12))
