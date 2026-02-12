@@ -163,31 +163,32 @@ class SyntheticGMMGenerator:
 
         return self.dataset
 
-# Example usage
-if __name__ == "__main__":
-    generator = SyntheticGMMGenerator(
-        n_samples=100,
-        n_dimensions=4,
-        n_components=10,
-        seed=42
-    )
+# # Example usage
+# if __name__ == "__main__":
+#     generator = SyntheticGMMGenerator(
+#         n_samples=100,
+#         n_dimensions=4,
+#         n_components=10,
+#         seed=42
+#     )
 
-    # Data generation
-    generator.set_random_params(cov_type="full") # must be randomly set or loaded by the user (set_params)
-    data = generator.generate_data(include_mus=True) # generate random parameters with diagonal covariance matrices
-    mus = generator.mus
-    covs = generator.covs
-    cluster_probs = generator.cluster_probs
-    print("Means:\n", mus.numpy())
-    print("Covs:\n", covs.numpy())
-    print("Cluster probs:\n", cluster_probs.numpy())
+#     # Data generation
+#     # generator.set_params(mus, covs, cluster_probs) # user-defined parameters (must be set by the user)
+#     generator.set_random_params(cov_type="full") # must be randomly set or loaded by the user (set_params)
+#     data = generator.generate_data(include_mus=True) # generate random parameters with diagonal covariance matrices
+#     mus = generator.mus
+#     covs = generator.covs
+#     cluster_probs = generator.cluster_probs
+#     print("Means:\n", mus.numpy())
+#     print("Covs:\n", covs.numpy())
+#     print("Cluster probs:\n", cluster_probs.numpy())
 
-    # Visualization
-    visualizer = ScatterPlotVisualizer(
-        data=data,
-        mus=mus,
-        covs=covs,
-        cluster_probs=cluster_probs
-    )
-    visualizer.plot_pca(samples_size=20, figsize=(8, 6))
-    visualizer.plot_splom(samples_size=20, figsize=(12, 12))
+#     # Visualization
+#     visualizer = ScatterPlotVisualizer(
+#         data=data,
+#         mus=mus,
+#         covs=covs,
+#         cluster_probs=cluster_probs
+#     )
+#     visualizer.plot_pca(samples_size=20, figsize=(8, 6))
+#     visualizer.plot_splom(samples_size=20, figsize=(12, 12))
